@@ -16,18 +16,22 @@ class AddNumberViewModel : ViewModel() {
     private val _viewState = MutableStateFlow<MainViewState>(MainViewState.Idle)
 
     private var number = 0
-    val state:StateFlow<MainViewState> get() = _viewState
+    val state: StateFlow<MainViewState> get() = _viewState
 
     init {
         processIntent()
     }
+
     //progress
-    private fun processIntent(){
+    private fun processIntent() {
         viewModelScope.launch {
             intentChannel.consumeAsFlow().collect {
-                when(it){
-                    is MainIntent.AddMsg->{
+                when (it) {
+                    is MainIntent.AddMsg -> {
                         addMsg(it.msg)
+                    }
+                    is MainIntent.CheckedMsg->{
+                        checkMsg(it.msg)
                     }
 
 
@@ -36,12 +40,25 @@ class AddNumberViewModel : ViewModel() {
         }
     }
 
+    private fun checkMsg(msg: String?) {
+        viewModelScope.launch {
+            _viewState.value = try {
+                if (msg.isNullOrEmpty())
+                     MainViewState.Error("Empty Message")
+                else
+                    MainViewState.Error(error = null)
+            }catch (e:Exception){
+                MainViewState.Error(e.message.toString())
+            }
+        }
+    }
+
     //reduce
-    private fun addMsg(msg:String){
+    private fun addMsg(msg: String) {
         viewModelScope.launch {
             _viewState.value = try {
                     MainViewState.Message(msg)
-            }catch (e : Exception){
+            } catch (e: Exception) {
                 MainViewState.Error(e.message.toString())
             }
         }

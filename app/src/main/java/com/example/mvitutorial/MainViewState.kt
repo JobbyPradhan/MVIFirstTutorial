@@ -6,7 +6,7 @@ sealed class MainViewState {
     //number
     data class Message(val msg : String):MainViewState()
     //error
-    data class Error(val error:String) : MainViewState()
+    data class Error(val error:String?) : MainViewState()
     //loading
 
 }

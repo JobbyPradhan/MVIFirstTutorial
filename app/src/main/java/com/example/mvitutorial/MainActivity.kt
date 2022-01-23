@@ -2,6 +2,7 @@ package com.example.mvitutorial
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
@@ -26,10 +27,17 @@ class MainActivity : AppCompatActivity() {
             //send
             lifecycleScope.launchWhenStarted {
                 viewModel.intentChannel.send(MainIntent.AddMsg(binding.etMsg.text.toString()))
+                binding.etMsg.setText("")
             }
 
         }
-        //render
+        binding.etMsg.doOnTextChanged { text, _, _, _ ->
+            lifecycleScope.launchWhenStarted {
+                viewModel.intentChannel.send(MainIntent.CheckedMsg(text.toString()))
+            }
+
+        }
+
     }
 
     private fun render(){
@@ -37,9 +45,13 @@ class MainActivity : AppCompatActivity() {
            viewModel.state.collect{
                when(it){
                    is MainViewState.Idle->{binding.txtMsg.text = ""}
-                   is MainViewState.Message->{binding.txtMsg.append(it.msg +"\n")}
+                   is MainViewState.Message->{
+                       Log.i("TAGAGAGAGA", "render: ${it.msg}")
+                       binding.txtMsg.append(it.msg +"\n")
+                       binding.tilMsg.error = null
+                   }
                    is MainViewState.Error->{
-                       binding.txtMsg.text = it.error
+                       binding.tilMsg.error = it.error
                    }
                }
            }
